@@ -96,13 +96,16 @@ export default function BatchLabelingPage({ params }: { params: Promise<{ id: st
   };
 
   const handleSave = async () => {
-    if (!isBatchComplete) return;
-    setSaving(true);
+    const labelsToSave = batchSamples
+      .filter(s => selections[s.id] !== undefined)
+      .map(s => ({
+        sample_id: s.id,
+        selected_atom_id: selections[s.id]
+      }));
+
+    if (labelsToSave.length === 0) return;
     
-    const labelsToSave = batchSamples.map(s => ({
-      sample_id: s.id,
-      selected_atom_id: selections[s.id]
-    }));
+    setSaving(true);
 
     await fetch('/api/labels', {
       method: 'POST',
@@ -111,7 +114,7 @@ export default function BatchLabelingPage({ params }: { params: Promise<{ id: st
     });
     
     setSaving(false);
-    alert('Batch saved successfully!');
+    alert('Progress saved successfully!');
     router.push('/');
   };
 
