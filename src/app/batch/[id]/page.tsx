@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Save, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
@@ -71,6 +71,28 @@ export default function BatchLabelingPage({ params }: { params: Promise<{ id: st
     if (currentSampleIndex < batchSamples.length - 1) {
       setTimeout(() => setCurrentSampleIndex(i => i + 1), 300);
     }
+  };
+
+  const handleClearBatch = async () => {
+    if (!confirm('Are you sure you want to clear all labels for this batch? This will delete the data from the database.')) return;
+    setSaving(true);
+    
+    const sampleIds = batchSamples.map(s => s.id);
+
+    await fetch('/api/labels', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sample_ids: sampleIds })
+    });
+    
+    setSelections(prev => {
+      const next = { ...prev };
+      sampleIds.forEach(id => delete next[id]);
+      return next;
+    });
+    
+    setSaving(false);
+    alert('Batch cleared successfully!');
   };
 
   const handleSave = async () => {
@@ -210,18 +232,28 @@ export default function BatchLabelingPage({ params }: { params: Promise<{ id: st
             })}
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={!isBatchComplete || saving}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all duration-200 ${
-              isBatchComplete && !saving
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg hover:-translate-y-0.5'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-            }`}
-          >
-            <Save size={18} />
-            {saving ? 'Saving...' : 'SAVE BATCH'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleClearBatch}
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={18} />
+              CLEAR
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!isBatchComplete || saving}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all duration-200 ${
+                isBatchComplete && !saving
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg hover:-translate-y-0.5'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              <Save size={18} />
+              {saving ? 'Saving...' : 'SAVE BATCH'}
+            </button>
+          </div>
         </div>
       </footer>
     </div>

@@ -27,3 +27,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const body = await request.json();
+    const { sample_ids } = body;
+
+    if (!Array.isArray(sample_ids) || sample_ids.length === 0) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('labels')
+      .delete()
+      .in('sample_id', sample_ids);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
