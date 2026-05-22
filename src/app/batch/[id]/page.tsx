@@ -243,15 +243,15 @@ export default function BatchLabelingPage({ params }: { params: Promise<{ id: st
             </button>
             <button
               onClick={handleSave}
-              disabled={!isBatchComplete || saving}
+              disabled={Object.keys(selections).length === 0 || saving}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all duration-200 ${
-                isBatchComplete && !saving
+                Object.keys(selections).length > 0 && !saving
                   ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg hover:-translate-y-0.5'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
               <Save size={18} />
-              {saving ? 'Saving...' : 'SAVE BATCH'}
+              {saving ? 'Saving...' : 'SAVE PROGRESS'}
             </button>
           </div>
         </div>
